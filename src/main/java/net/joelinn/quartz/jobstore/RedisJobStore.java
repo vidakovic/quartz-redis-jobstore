@@ -191,6 +191,16 @@ public class RedisJobStore implements JobStore {
                 .setClusterCheckInterval(clusterCheckinInterval);
     }
 
+    @Override
+    public void resetTriggerFromErrorState(TriggerKey triggerKey) throws JobPersistenceException {
+
+    }
+
+    @Override
+    public long getAcquireRetryDelay(int i) {
+        return 0;
+    }
+
     /**
      * Called by the QuartzScheduler to inform the <code>JobStore</code> that
      * the scheduler has started.
@@ -225,8 +235,17 @@ public class RedisJobStore implements JobStore {
      */
     @Override
     public void shutdown() {
-        if(jedisPool != null){
-            jedisPool.destroy();
+        try {
+            clearAllSchedulingData();
+        } catch (Exception e) {
+            logger.error(e.toString(), e);
+        }
+        try {
+            if(jedisPool != null){
+                jedisPool.destroy();
+            }
+        } catch (Exception e) {
+            logger.error(e.toString(), e);
         }
     }
 
